@@ -21,7 +21,18 @@ Both write to the same report and end with **"Save learnings and persist pattern
 | 5 · Self-Learning | 1 min 1 s | 0.32 USD | 4 records recalled, one per exercise |
 | Stretch | 3 min 42 s | 0.66 USD | `update-manager.ts` ranked first, `block-transfer.ts` second |
 
-A second unattended run the same day on agentic-qe 3.15.3 took about the same time and gave the same verdicts (CONDITIONAL, then NO-GO) with different detail: 110 test ideas in Exercise 2, and 109 new tests in Exercise 3, of which 12 fail on purpose because they assert a requirement the code breaks. Expect that kind of difference in your own run. In Exercise 3 a failing test is a finding to judge and does not mean the exercise went wrong.
+Every command and prompt in this file was run again on 11 October 2026 from a fresh clone of the GitHub repository with agentic-qe 3.15.3, driven by Claude Code. Both prompt versions completed and wrote their reports:
+
+| Exercise | Claude Code prompt | Other-tools prompt |
+|----------|--------------------|--------------------|
+| 1 · Ideation | 4 min 49 s · CONDITIONAL | 2 min 54 s · NO-GO |
+| 2 · Refinement | 4 min 14 s · 98 test ideas | 3 min 30 s · 79 test ideas |
+| 3 · Development | 4 min 33 s · 106 tests, all pass | 2 min 15 s · 83 tests, all pass |
+| 4 · Verification | 4 min 7 s · NO-GO, gate score 76 against 90 | 2 min 32 s · NO-GO |
+| 5 · Self-Learning | 1 min 13 s · 11 memory entries recalled | 59 s · 4 patterns recalled |
+| Stretch | 6 min 14 s · `update-manager.ts` first, `block-transfer.ts` second | 2 min 7 s |
+
+Expect differences like these in your own run. The Ideation verdict was CONDITIONAL in some runs and NO-GO in others, and the number of generated tests ranged from 53 to 109. In one run 12 generated tests failed on purpose because they assert a requirement the code breaks. In Exercise 3 a failing test is a finding to judge and does not mean the exercise went wrong. The other-tools prompts were run through Claude Code, and were not run on Copilot, Cursor, Codex or Kiro.
 
 **Container users** (Codespaces or local Docker): `bash .devcontainer/prepare-workshop.sh` has already run the three Exercise 0 commands. Read its output and continue with Exercise 1. See [docs/DEVCONTAINER.md](./docs/DEVCONTAINER.md).
 
@@ -47,7 +58,7 @@ aqe memory usage
 | `aqe hg stats` | 96 nodes / 161 edges (function 49, module 25, file 13, test 9) |
 | `aqe memory usage` | Entries 12 · Vectors 86 · Namespaces 1 |
 
-The index and `hg stats` counts differ because they count different things: the indexer reports what it just created, `hg stats` reports every node type in the persisted graph, including the test files that `aqe init` found. Measured on 11 October 2026 with agentic-qe 3.15.2.
+The index and `hg stats` counts differ because they count different things: the indexer reports what it just created, `hg stats` reports every node type in the persisted graph, including the test files that `aqe init` found. Measured on 11 October 2026 with agentic-qe 3.15.2 and again with 3.15.3.
 
 > *Heads-up:* if you have an LLM provider configured for AQE, indexing also runs an optional relationship-extraction pass that calls the model **once per file**. On this repo that is 12 calls. To avoid them, run the index before you export any provider key. Lines reading `LLM relationship extraction failed` mean that pass was skipped. The graph is still complete.
 
@@ -217,7 +228,7 @@ and decide on release. Do NOT generate tests. Assess what exists:
 7. Save learnings and persist patterns
 ```
 
-> *Expected coverage:* `npm run test:coverage` reports 79.69% of statements overall, and 92.85% of statements and 97.14% of branches for `block-transfer.ts`, before Exercise 3 adds tests. Coverage alone clears 90% on this module. Read the report anyway and compare the verdict with the coverage figure.
+> *Expected coverage:* `npm run test:coverage` reports 77.61% of statements overall, and 92.85% of statements and 97.14% of branches for `block-transfer.ts`, before Exercise 3 adds tests. The table shortens the file name to `...k-transfer.ts`. Coverage alone clears 90% on this module. Read the report anyway and compare the verdict with the coverage figure.
 
 ---
 
@@ -247,9 +258,9 @@ Save the brief to reports/05-handoff-brief.md.
 
 > *What to expect:* in our run on 11 October 2026 the recall returned four records, one per exercise: the Ideation verdict, the product-factors learnings, the test-generation pattern for `block-transfer.ts` and the Verification verdict. Image verification and security access had no record of their own, so those parts of the brief were labelled REPORTS-BASED.
 
-> *What you will see along the way:* lines mentioning `brain.rvf` or `VECTOR_SPACE_UNVERIFIED`. Both are expected. The optional vector index is skipped and AQE falls back to SQLite, which is the authoritative store.
+> *What you may see along the way:* a `[VectorSearch] WARN` line mentioning `brain.rvf`, or `VECTOR_SPACE_UNVERIFIED`. Both are expected. The optional vector index is skipped and AQE falls back to SQLite, which is the authoritative store.
 
-> *If nothing comes back:* run `aqe learning stats`. If it reads `Total: 0`, setup step 5 (the embedder) was skipped, so nothing was persisted. Install it, then build the brief from your reports: *"Read reports/01 through reports/04 and write the same one-page brief to reports/05-handoff-brief.md, labelled REPORTS-BASED."* A brief built from reports is a valid result. Say so in the brief. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detail.
+> *If nothing comes back:* run `aqe learning stats`. If it reads `Total: 0`, setup step 5 (the embedder) was skipped, so nothing was persisted. Install it (the total then reads 22), then build the brief from your reports: *"Read reports/01 through reports/04 and write the same one-page brief to reports/05-handoff-brief.md, labelled REPORTS-BASED."* A brief built from reports is a valid result. Say so in the brief. See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detail.
 
 ---
 
