@@ -12,6 +12,20 @@ import { createEcuSimulator } from './ecu-simulator'
 const IMAGE_SIZE = 16 * 1024
 const BLOCK_LENGTH = 1024
 
+const SEED = Number(process.env.SIM_SEED ?? 7)
+
+// Small deterministic generator (mulberry32), used only by the lossy run.
+const seededRandom = (seed: number): (() => number) => {
+  let a = seed >>> 0
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
 const buildPackage = (): UpdatePackage => {
   const payload = new Uint8Array(IMAGE_SIZE)
   for (let i = 0; i < payload.length; i++) payload[i] = (i * 31 + 7) & 0xff
@@ -39,7 +53,13 @@ const main = async (): Promise<void> => {
   })
   // `npm run simulate -- --lossy` makes the ECU lose one response in three.
   const lossy = process.argv.includes('--lossy')
-  const ecu = createEcuSimulator(lossy ? { lostResponseRate: 0.33 } : {})
+  // Both runs are repeatable: the healthy link never fails, and the lossy link
+  // draws from a fixed-seed generator so everyone in the room sees the same result.
+  const ecu = createEcuSimulator(
+    lossy
+      ? { busyRate: 0, lostResponseRate: 0.33, random: seededRandom(SEED) }
+      : { busyRate: 0, lostResponseRate: 0 },
+  )
   const pkg = buildPackage()
 
   // Retries wait for their real backoff delay, so a run takes a few seconds.
