@@ -1,0 +1,22 @@
+{
+  "name": "ecu-ota-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A small simulated ECU firmware-update (OTA) module used as a sample subject for quality-engineering exercises. No hardware needed.",
+  "type": "module",
+  "scripts": {
+    "simulate": "tsx src/sim/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "fast-check": "^4.10.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  }
+}
