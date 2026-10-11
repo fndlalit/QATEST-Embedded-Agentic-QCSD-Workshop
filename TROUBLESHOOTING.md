@@ -11,7 +11,7 @@ npm install -g @huggingface/transformers@4.2.0
 aqe learning stats
 ```
 
-LEARNING_TOTALS
+With the embedder installed, the first `aqe learning stats` seeds AQE's foundational patterns and reads `Total: 70` on agentic-qe 3.15.2. The seeding happens once. If you ran `aqe learning stats` before installing the embedder, the total is lower (22 in our check) and the exercises still work.
 
 ## `VECTOR_SPACE_UNVERIFIED` and `brain.rvf`
 

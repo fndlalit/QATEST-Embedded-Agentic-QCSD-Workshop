@@ -35,7 +35,7 @@ A tutorial morning is not enough time to fix a laptop. Please finish Setup befor
 - **Git.**
 - **Rights to install a global npm package.** Setup runs `npm install -g agentic-qe`. If your machine blocks that, bring a laptop that does not.
 - **A coding agent you already use, signed in and working.** Claude Code, GitHub Copilot, Cursor, AWS Kiro, OpenAI Codex CLI, Windsurf, Cline, OpenCode, Kilo Code, Roo Code or Continue.dev. AQE drives whichever one you have through one MCP server.
-- **Your own model access.** Exercises 1 to 5 spend your tokens on your own key or subscription. Exercise 0 spends none. COST_LINE
+- **Your own model access.** Exercises 1 to 5 spend your tokens on your own key or subscription. Exercise 0 spends none. One unattended run of all exercises on Claude Code cost 4.47 USD on 11 October 2026 (3.81 USD without the stretch exercise).
 - **About 2 GB of free disk space.**
 - **No hardware, no compiler toolchain, no debugger.** The ECU is simulated in TypeScript.
 
@@ -81,15 +81,15 @@ aqe init --auto                    # set up AQE for YOUR coding agent, see the t
 
 ```bash
 npm install
-npm run test:run        # optional check: TESTS_LINE
+npm run test:run        # optional check: 121 tests in 9 files pass
 ```
 
 **4. Build the code knowledge graph.** Three commands in your terminal, before you open your coding agent:
 
 ```bash
-aqe code index src/     # expect: 12 files indexed, 85 nodes, 89 edges
+aqe code index src/     # expect: 12 files indexed, 86 nodes, 90 edges
 aqe hg stats            # the persisted graph, counted by node type
-aqe memory usage        # your starting baseline: 12 entries, 85 vectors
+aqe memory usage        # your starting baseline: 12 entries, 86 vectors
 ```
 
 This is static analysis plus a local embedding model. It needs no API key and spends no tokens.

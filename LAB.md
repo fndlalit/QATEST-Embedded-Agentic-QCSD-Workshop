@@ -10,7 +10,18 @@ No hardware is needed. The ECU is simulated in software and everything runs on y
 
 Both write to the same report and end with **"Save learnings and persist patterns."** Exercise 0 is three terminal commands and Exercise 5 is one prompt, so both are identical on every tool.
 
-**Measured run times** (MEASURED_LINE)
+**Measured run times** (one unattended run on 11 October 2026, agentic-qe 3.15.2, Claude Code; interactive runs take longer because you approve tool calls):
+
+| Exercise | Run time | Model cost | Result in that run |
+|----------|----------|------------|--------------------|
+| 1 · Ideation | 4 min 40 s | 1.60 USD | CONDITIONAL, 8 contradictions between the three requirements files |
+| 2 · Refinement | 3 min 34 s | 0.55 USD | 86 test ideas across the seven factors, 13 requirement conflicts |
+| 3 · Development | 4 min 7 s | 0.76 USD | 53 new tests, all runnable, 4 of them `it.fails` tests that record a defect |
+| 4 · Verification | 2 min 44 s | 0.58 USD | NO-GO: 3 of 10 safety scenarios have a test |
+| 5 · Self-Learning | 1 min 1 s | 0.32 USD | 4 records recalled, one per exercise |
+| Stretch | 3 min 42 s | 0.66 USD | `update-manager.ts` ranked first, `block-transfer.ts` second |
+
+Your results will differ in detail. AI agents do not give the same answer twice.
 
 **Before you start:** finish the [README](./README.md) Setup (Node 22.13+ → clone → `npm install -g agentic-qe@latest` → `aqe init --auto --with-<your-tool>` → `npm install` → `aqe code index src/` → `npm install -g @huggingface/transformers@4.2.0`), then launch your coding agent in this folder. **Do not skip `aqe init`** (it installs the AI agents, the MCP configuration and the memory database) and **run the exercises in order** (3 reads what 2 wrote, 4 judges what 3 added, 5 recalls what 1 to 4 saved). Paths are relative to the repo root.
 
@@ -30,15 +41,22 @@ aqe memory usage
 
 | Command | Expected on this repo |
 |---------|----------------------|
-| `aqe code index src/` | `Files indexed: 12` · `Nodes created: 85` · `Edges created: 89` · a few seconds |
-| `aqe hg stats` | 95 nodes / 160 edges (function 48, module 25, file 13, test 9) |
-| `aqe memory usage` | Entries 12 · Vectors 85 · Namespaces 1 |
+| `aqe code index src/` | `Files indexed: 12` · `Nodes created: 86` · `Edges created: 90` · a few seconds |
+| `aqe hg stats` | 96 nodes / 161 edges (function 49, module 25, file 13, test 9) |
+| `aqe memory usage` | Entries 12 · Vectors 86 · Namespaces 1 |
 
 The index and `hg stats` counts differ because they count different things: the indexer reports what it just created, `hg stats` reports every node type in the persisted graph, including the test files that `aqe init` found. Measured on 11 October 2026 with agentic-qe 3.15.2.
 
 > *Heads-up:* if you have an LLM provider configured for AQE, indexing also runs an optional relationship-extraction pass that calls the model **once per file**. On this repo that is 12 calls. To avoid them, run the index before you export any provider key. Lines reading `LLM relationship extraction failed` mean that pass was skipped. The graph is still complete.
 
-**Optional: watch the subject under test run.** `npm run simulate` runs one firmware update against the simulated ECU. `npm run simulate -- --lossy` does the same on a link that loses responses. Compare the line `flash writes` with `image size` in both runs and keep the result in mind for Exercise 3.
+**Optional: watch the subject under test run.** `npm run simulate` runs one firmware update against the simulated ECU. `npm run simulate -- --lossy` does the same on a link that loses one response in three. Both runs are repeatable.
+
+| Run | `phase` | `retries` | `image size` | `flash writes` |
+|-----|---------|-----------|--------------|----------------|
+| `npm run simulate` | committed | 0 | 16384 bytes | 16 blocks, 16384 bytes |
+| `npm run simulate -- --lossy` | committed | 7 | 16384 bytes | 23 blocks, 23552 bytes |
+
+On the lossy link the update still reports `committed`, but 23 blocks were written to flash for a 16-block image. Keep that in mind for Exercise 3.
 
 ---
 
@@ -197,7 +215,7 @@ and decide on release. Do NOT generate tests. Assess what exists:
 7. Save learnings and persist patterns
 ```
 
-> *Expected coverage:* `npm run test:coverage` reports **COVERAGE_LINE**. Coverage alone clears 90% on this module. Read the report anyway and compare the verdict with the coverage figure.
+> *Expected coverage:* `npm run test:coverage` reports 79.69% of statements overall, and 92.85% of statements and 97.14% of branches for `block-transfer.ts`, before Exercise 3 adds tests. Coverage alone clears 90% on this module. Read the report anyway and compare the verdict with the coverage figure.
 
 ---
 
@@ -225,7 +243,7 @@ Save the brief to reports/05-handoff-brief.md.
 
 > *Read the list before the brief.* It should name this codebase: `block-transfer.ts`, `update-manager.ts`, the epic. A list of generic testing patterns means the recall went wide, because the store also holds AQE's own foundational patterns. Run it again naming the module you care about.
 
-> *What to expect:* EX5_EXPECT_LINE
+> *What to expect:* in our run on 11 October 2026 the recall returned four records, one per exercise: the Ideation verdict, the product-factors learnings, the test-generation pattern for `block-transfer.ts` and the Verification verdict. Image verification and security access had no record of their own, so those parts of the brief were labelled REPORTS-BASED.
 
 > *What you will see along the way:* lines mentioning `brain.rvf` or `VECTOR_SPACE_UNVERIFIED`. Both are expected. The optional vector index is skipped and AQE falls back to SQLite, which is the authoritative store.
 
