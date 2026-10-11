@@ -23,6 +23,8 @@ Both write to the same report and end with **"Save learnings and persist pattern
 
 Your results will differ in detail. AI agents do not give the same answer twice.
 
+**Container users** (Codespaces or local Docker): `bash .devcontainer/prepare-workshop.sh` has already run the three Exercise 0 commands. Read its output and continue with Exercise 1. See [docs/DEVCONTAINER.md](./docs/DEVCONTAINER.md).
+
 **Before you start:** finish the [README](./README.md) Setup (Node 22.13+ → clone → `npm install -g agentic-qe@latest` → `aqe init --auto --with-<your-tool>` → `npm install` → `aqe code index src/` → `npm install -g @huggingface/transformers@4.2.0`), then launch your coding agent in this folder. **Do not skip `aqe init`** (it installs the AI agents, the MCP configuration and the memory database) and **run the exercises in order** (3 reads what 2 wrote, 4 judges what 3 added, 5 recalls what 1 to 4 saved). Paths are relative to the repo root.
 
 ---

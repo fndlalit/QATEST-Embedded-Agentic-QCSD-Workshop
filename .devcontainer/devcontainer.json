@@ -1,0 +1,21 @@
+{
+  "name": "QA&TEST Embedded 2026 · Agentic QE for Embedded Systems",
+  "build": { "dockerfile": "Dockerfile", "context": "." },
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "hostRequirements": { "cpus": 2, "memory": "8gb", "storage": "32gb" },
+  "otherPortsAttributes": { "onAutoForward": "ignore" },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "waitFor": "postCreateCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": ["anthropic.claude-code", "openai.chatgpt"],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "editor.fontSize": 16,
+        "terminal.integrated.fontSize": 16
+      }
+    },
+    "codespaces": { "openFiles": ["docs/DEVCONTAINER.md", "LAB.md"] }
+  }
+}

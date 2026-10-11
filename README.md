@@ -31,7 +31,7 @@ Exercises 1 to 4 have **two prompt versions**: one for Claude Code and one plain
 
 A tutorial morning is not enough time to fix a laptop. Please finish Setup before the session.
 
-- **Node.js 22.13 or newer and npm 10 or newer.** Check with `node -v` and `npm -v`.
+- **Node.js 22.13 or newer and npm 10 or newer.** Check with `node -v` and `npm -v`. Not needed if you use the container setup.
 - **Git.**
 - **Rights to install a global npm package.** Setup runs `npm install -g agentic-qe`. If your machine blocks that, bring a laptop that does not.
 - **A coding agent you already use, signed in and working.** Claude Code, GitHub Copilot, Cursor, AWS Kiro, OpenAI Codex CLI, Windsurf, Cline, OpenCode, Kilo Code, Roo Code or Continue.dev. AQE drives whichever one you have through one MCP server.
@@ -44,6 +44,13 @@ Conference wifi and corporate proxies are the two things most likely to break Se
 ---
 
 ## Setup
+
+There are two ways to set up. Pick one.
+
+- **On your laptop (manual):** the six steps below.
+- **In a container (GitHub Codespaces or local Docker):** nothing to install on your laptop. Follow **[docs/DEVCONTAINER.md](./docs/DEVCONTAINER.md)**, then go straight to LAB.md. Use this if your machine blocks global npm installs or cannot run Node 22.13.
+
+### Manual setup
 
 **1. Get this repo.** Clone it, then move into the folder:
 
