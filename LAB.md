@@ -21,7 +21,7 @@ Both write to the same report and end with **"Save learnings and persist pattern
 | 5 · Self-Learning | 1 min 1 s | 0.32 USD | 4 records recalled, one per exercise |
 | Stretch | 3 min 42 s | 0.66 USD | `update-manager.ts` ranked first, `block-transfer.ts` second |
 
-Your results will differ in detail. AI agents do not give the same answer twice.
+A second unattended run the same day on agentic-qe 3.15.3 took about the same time and gave the same verdicts (CONDITIONAL, then NO-GO) with different detail: 110 test ideas in Exercise 2, and 109 new tests in Exercise 3, of which 12 fail on purpose because they assert a requirement the code breaks. Expect that kind of difference in your own run. In Exercise 3 a failing test is a finding to judge and does not mean the exercise went wrong.
 
 **Container users** (Codespaces or local Docker): `bash .devcontainer/prepare-workshop.sh` has already run the three Exercise 0 commands. Read its output and continue with Exercise 1. See [docs/DEVCONTAINER.md](./docs/DEVCONTAINER.md).
 
