@@ -22,6 +22,7 @@ A short warm-up, four lifecycle exercises and a self-learning close, all copy-pa
 | **3 · Development** | `qe-test-architect` | Can it turn those ideas into runnable tests for the riskiest module? |
 | **4 · Verification** | `qe-queen-coordinator` | Is this releasable? Coverage, security, safety traceability and a 90% gate. |
 | **5 · Self-Learning** | AQE memory | A handoff brief consolidated from what the AI agents learned. |
+| **Stretch** | `qe-defect-predictor`, `qe-test-architect` | Three optional extras: a defect risk profile, the same module in C with Unity tests, and fault injection (power loss mid-update). |
 
 Exercises 1 to 4 have **two prompt versions**: one for Claude Code and one plain step list for every other tool. You then score the reports with **PACTS** and leave with a **personal adoption roadmap**.
 
@@ -123,7 +124,8 @@ A simulated over-the-air firmware update for an automotive Body Control Module (
 - **A/B partitions** (`src/ota/partition-manager.ts`): slot bookkeeping, boot attempts, rollback.
 - **Vehicle preconditions** (`src/ota/preconditions.ts`): speed, battery voltage, ignition.
 - **Libraries** (`src/lib`): block transfer with retry and backoff, image verification (CRC-32, signature, anti-rollback), UDS request validation, SecurityAccess attempt limiting, diagnostic session timeout, event and fault logging, timing budgets.
-- **Simulator** (`src/sim`): a software ECU that answers TransferData requests. `npm run simulate` runs one update. `npm run simulate -- --lossy` runs it on a link that loses responses.
+- **Simulator** (`src/sim`): a software ECU that answers TransferData requests. `npm run simulate` runs one update. `npm run simulate -- --lossy` runs it on a link that loses responses. `npm run simulate -- --power-loss-at 9` cuts the ECU's power during a flash write.
+- **C twin** (`embedded/`): the block transfer module written in C for a bare-metal target, with Unity tests. `npm run test:c` compiles and runs them if a C compiler is installed. Optional, used by one stretch exercise.
 - **Requirements** (`requirements/`): the epic, user stories and acceptance criteria for the update function.
 
 **Stack:** TypeScript · Vitest · fast-check. No framework, no hardware abstraction layer, no real CAN bus.

@@ -1,6 +1,6 @@
 # Workshop Lab: Copy-Paste Exercises
 
-Six steps on a deliberately flawed ECU firmware update module: **build a local knowledge graph (0) → Ideation (1) → Refinement (2) → Development (3) → Verification (4) → Self-Learning (5)**, then **PACTS scoring** and a **Personal Adoption Roadmap**. The exercises build on each other (Refinement feeds Development, Verification judges the result) and each one ends by saving its learnings. Exercise 5 turns those into a handoff brief. There is one optional stretch exercise for fast finishers.
+Six steps on a deliberately flawed ECU firmware update module: **build a local knowledge graph (0) → Ideation (1) → Refinement (2) → Development (3) → Verification (4) → Self-Learning (5)**, then **PACTS scoring** and a **Personal Adoption Roadmap**. The exercises build on each other (Refinement feeds Development, Verification judges the result) and each one ends by saving its learnings. Exercise 5 turns those into a handoff brief. There are three optional stretch exercises for fast finishers.
 
 No hardware is needed. The ECU is simulated in software and everything runs on your laptop.
 
@@ -31,8 +31,10 @@ Every command and prompt in this file was run again on 11 October 2026 from a fr
 | 4 · Verification | 4 min 7 s · NO-GO, gate score 76 against 90 | 2 min 32 s · NO-GO |
 | 5 · Self-Learning | 1 min 13 s · 11 memory entries recalled | 59 s · 4 patterns recalled |
 | Stretch | 6 min 14 s · `update-manager.ts` first, `block-transfer.ts` second | 2 min 7 s |
+| Stretch B · C twin | 4 min 30 s · 36 Unity tests, 8 fail on purpose | 1 min 48 s · 36 Unity tests, 3 fail on purpose |
+| Stretch C · power loss | 5 min 32 s · 203 tests, 96 fail on purpose (7 distinct defects) | 2 min 35 s · 104 tests, 37 fail on purpose (7 distinct defects) |
 
-Expect differences like these in your own run. The Ideation verdict was CONDITIONAL in some runs and NO-GO in others, and the number of generated tests ranged from 53 to 109. In one run 12 generated tests failed on purpose because they assert a requirement the code breaks. In Exercise 3 a failing test is a finding to judge and does not mean the exercise went wrong. The other-tools prompts were run through Claude Code, and were not run on Copilot, Cursor, Codex or Kiro.
+Expect differences like these in your own run. The Ideation verdict was CONDITIONAL in some runs and NO-GO in others, and the number of generated tests ranged from 53 to 109. In one run 12 generated tests failed on purpose because they assert a requirement the code breaks. In Exercise 3 a failing test is a finding to judge and does not mean the exercise went wrong. The other-tools prompts were run through Claude Code, and were not run on Copilot, Cursor, Codex or Kiro. Stretch exercises B and C were added and run on 13 October 2026 with agentic-qe 3.15.3. Both found the same things in every run: the jitter added after the 5 s cap, the fault event that never leaves RAM after a power loss, and the restart at block 1 instead of a resume.
 
 **Container users** (Codespaces or local Docker): `bash .devcontainer/prepare-workshop.sh` has already run the three Exercise 0 commands. Read its output and continue with Exercise 1. See [docs/DEVCONTAINER.md](./docs/DEVCONTAINER.md).
 
@@ -68,8 +70,9 @@ The index and `hg stats` counts differ because they count different things: the 
 |-----|---------|-----------|--------------|----------------|
 | `npm run simulate` | committed | 0 | 16384 bytes | 16 blocks, 16384 bytes |
 | `npm run simulate -- --lossy` | committed | 7 | 16384 bytes | 23 blocks, 23552 bytes |
+| `npm run simulate -- --power-loss-at 9` | failed | 3 | 16384 bytes | 9 blocks, 8704 bytes |
 
-On the lossy link the update still reports `committed`, but 23 blocks were written to flash for a 16-block image. Keep that in mind for Exercise 3.
+On the lossy link the update still reports `committed`, but 23 blocks were written to flash for a 16-block image. Keep that in mind for Exercise 3. The power-loss run cuts the ECU's power while it writes block 9: the fault event stays in RAM and never reaches the backend, the tester retries three times against an ECU that has already rebooted, and the next update starts again at block 1. The stretch exercise on fault injection works from that run.
 
 ---
 
@@ -228,7 +231,7 @@ and decide on release. Do NOT generate tests. Assess what exists:
 7. Save learnings and persist patterns
 ```
 
-> *Expected coverage:* `npm run test:coverage` reports 77.61% of statements overall, and 92.85% of statements and 97.14% of branches for `block-transfer.ts`, before Exercise 3 adds tests. The table shortens the file name to `...k-transfer.ts`. Coverage alone clears 90% on this module. Read the report anyway and compare the verdict with the coverage figure.
+> *Expected coverage:* `npm run test:coverage` reports 75.27% of statements overall, and 92.85% of statements and 97.14% of branches for `block-transfer.ts`, before Exercise 3 adds tests. The table shortens the file name to `...k-transfer.ts`. Coverage alone clears 90% on this module. Read the report anyway and compare the verdict with the coverage figure.
 
 ---
 
@@ -264,7 +267,7 @@ Save the brief to reports/05-handoff-brief.md.
 
 ---
 
-## Stretch exercise: defect risk profile (about 10 min)
+## Stretch exercise A: defect risk profile (about 10 min)
 
 > For fast finishers, any time after Exercise 2. *Why:* before writing tests, decide where they pay off.
 
@@ -295,6 +298,106 @@ Build a defect risk profile for the ECU update module:
 5. Save to reports/stretch-defect-risk-profile.md
 6. Save learnings and persist patterns
 ```
+
+## Stretch exercise B: the same module in C (about 15 min)
+
+> For fast finishers, any time after Exercise 3. *Why:* the subject under test is TypeScript so that it runs on every laptop without a toolchain. `embedded/block_transfer.c` is the same module written for a bare-metal target, with the same defects, and `embedded/test_block_transfer.c` is its Unity test suite. This exercise shows that the AI agents' work does not depend on the language. It needs a C compiler (`gcc` or `clang`); without one, `npm run test:c` says so and exits, and the exercise is skipped.
+
+```bash
+npm run test:c        # expect: 19 Tests 0 Failures 0 Ignored
+```
+
+AQE's code graph parses TypeScript and JavaScript only, so `aqe code index` records the C files as plain nodes without dependency edges. The AI agents read the C source directly, which is all this exercise needs.
+
+**▸ Claude Code users:**
+
+```
+Use qe-test-architect to review the C twin of the block transfer module in
+embedded/block_transfer.c (header embedded/block_transfer.h) and its Unity
+tests in embedded/test_block_transfer.c. Write additional Unity tests for the
+invariants Exercise 3 covered in TypeScript (retry timing bounds against the
+5 s P2* limit, attempt counts, block sequence handling) in a new file
+embedded/test_block_transfer_architect.c, using the same test doubles style
+as the existing file. Make it compile and run with
+npm run test:c -- test_block_transfer_architect.c. A test that fails because
+the code breaks a requirement stays in the file with SUSPECTED DEFECT in its
+name. Write a short comparison of what you found in C against
+reports/03-development-tests.md to reports/stretch-c-twin.md.
+Save learnings and persist patterns.
+```
+
+**▸ Other tools:**
+
+```
+Write Unity tests for the C twin of the block transfer module:
+
+1. Read embedded/block_transfer.h, embedded/block_transfer.c and the existing
+   Unity tests in embedded/test_block_transfer.c
+2. Write embedded/test_block_transfer_architect.c covering retry timing bounds
+   against the 5 s P2* limit, attempt counts and block sequence handling, in
+   the same test-double style as the existing file
+3. Compile and run it with: npm run test:c -- test_block_transfer_architect.c
+4. Keep any test that fails because the code breaks a requirement, with
+   SUSPECTED DEFECT in its name
+5. Write a short comparison with reports/03-development-tests.md to
+   reports/stretch-c-twin.md
+6. Save learnings and persist patterns
+```
+
+---
+
+## Stretch exercise C: fault injection, power loss during the update (about 15 min)
+
+> For fast finishers, any time after Exercise 2. *Why:* for an ECU the question is not whether the update works, but what state the ECU is in when it does not. The simulator can cut the ECU's power during a flash write. The retry backoff sleeps for real, so a failed block costs about 3.5 s; the generated tests need vitest fake timers or a larger timeout.
+
+```bash
+npm run simulate -- --power-loss-at 9
+```
+
+**▸ Claude Code users:**
+
+```
+Run npm run simulate -- --power-loss-at 9 and read src/sim/ecu-simulator.ts,
+src/ota/update-manager.ts and src/lib/dtc-logger.ts. The ECU loses power while
+writing block 9 of 16. Compare what the run shows (retries against an ECU
+that has already rebooted, the fault event held in RAM, the inactive slot's
+state, no resume) with the requirements in requirements/epic-ota-update.md,
+requirements/user-stories.md and requirements/acceptance-criteria.md: resume
+(NFR-06, US-08), the rollback budget (NFR-05, AC-07), events surviving a power
+cycle (NFR-10, AC-09) and the bootable flag (US-05, AC-05). Then use
+qe-test-architect to write tests/ota/power-loss.architect.test.ts with
+fault-injection tests that cut power at every block from 1 to 16 and during
+activation, asserting what the requirements demand. The retry backoff sleeps
+for real, so use vitest fake timers or a larger test timeout. Keep tests that
+fail because the code breaks a requirement, marked SUSPECTED DEFECT. Run them
+with npm test -- --run tests/ota/power-loss.architect.test.ts.
+Save the analysis to reports/stretch-power-loss.md.
+Save learnings and persist patterns.
+```
+
+**▸ Other tools:**
+
+```
+Fault-injection analysis of a power loss during the ECU update:
+
+1. Run npm run simulate -- --power-loss-at 9 and read src/sim/ecu-simulator.ts,
+   src/ota/update-manager.ts and src/lib/dtc-logger.ts
+2. Compare what the run shows (retries against a rebooted ECU, the fault
+   event held in RAM, the inactive slot's state, no resume) with the
+   requirements: resume (NFR-06, US-08), rollback budget (NFR-05, AC-07),
+   events surviving a power cycle (NFR-10, AC-09), bootable flag (US-05, AC-05)
+3. Write tests/ota/power-loss.architect.test.ts: fault-injection tests that
+   cut power at every block from 1 to 16 and during activation, asserting what
+   the requirements demand. The retry backoff sleeps for real, so use vitest
+   fake timers or a larger test timeout
+4. Keep tests that fail because the code breaks a requirement, marked
+   SUSPECTED DEFECT, and run them with
+   npm test -- --run tests/ota/power-loss.architect.test.ts
+5. Save the analysis to reports/stretch-power-loss.md
+6. Save learnings and persist patterns
+```
+
+---
 
 ---
 

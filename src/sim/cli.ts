@@ -1,6 +1,7 @@
 // Runs one simulated firmware update end to end and prints what happened.
 // Usage: npm run simulate            (healthy link)
 //        npm run simulate -- --lossy (responses get lost after the block is written)
+//        npm run simulate -- --power-loss-at 9 (the ECU loses power while writing block 9)
 
 import { crc32 } from '../lib/image-verify'
 import { createEventLogger, type UpdateEvent } from '../lib/dtc-logger'
@@ -53,12 +54,15 @@ const main = async (): Promise<void> => {
   })
   // `npm run simulate -- --lossy` makes the ECU lose one response in three.
   const lossy = process.argv.includes('--lossy')
-  // Both runs are repeatable: the healthy link never fails, and the lossy link
+  // `npm run simulate -- --power-loss-at N` cuts the ECU's power while it writes block N.
+  const powerLossArg = process.argv.indexOf('--power-loss-at')
+  const powerLossAtBlock = powerLossArg >= 0 ? Number(process.argv[powerLossArg + 1]) : 0
+  // All runs are repeatable: the healthy link never fails, and the lossy link
   // draws from a fixed-seed generator so everyone in the room sees the same result.
   const ecu = createEcuSimulator(
     lossy
       ? { busyRate: 0, lostResponseRate: 0.33, random: seededRandom(SEED) }
-      : { busyRate: 0, lostResponseRate: 0 },
+      : { busyRate: 0, lostResponseRate: 0, powerLossAtBlock },
   )
   const pkg = buildPackage()
 
@@ -81,7 +85,13 @@ const main = async (): Promise<void> => {
   console.log(`  active slot:  ${outcome.partitions.active}`)
   console.log(`  image size:   ${IMAGE_SIZE} bytes`)
   console.log(`  flash writes: ${ecu.flashLog().length} blocks, ${ecu.bytesInFlash()} bytes`)
-  console.log(`  events:       ${stored.map((e) => e.code).join(', ') || 'none'}`)
+  console.log(`  events sent:  ${stored.map((e) => e.code).join(', ') || 'none'}`)
+  console.log(`  events in RAM: ${logger.pending()} not yet flushed`)
+  if (ecu.rebooted()) {
+    const inactive = outcome.partitions.active === 'A' ? 'B' : 'A'
+    const slot = outcome.partitions.slots[inactive]
+    console.log(`  ECU rebooted: yes, inactive slot ${inactive} holds ${slot.bytesWritten} bytes, bootable: ${slot.bootable}`)
+  }
   if (outcome.reason) console.log(`  reason:       ${outcome.reason}`)
 }
 

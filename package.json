@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:c": "bash embedded/run-tests.sh"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
